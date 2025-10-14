@@ -1,0 +1,79 @@
+version: "3.9"
+
+services:
+  # ============ BACKEND CLUSTER ============
+  backend1:
+    build: ./dist-r1/api-server
+    restart: always
+    environment:
+      PORT: 7070
+    ports:
+      - "7071:7070"
+
+  backend2:
+    build: ./dist-r1/api-server
+    restart: always
+    environment:
+      PORT: 7070
+    ports:
+      - "7072:7070"
+
+  backend3:
+    build: ./dist-r1/api-server
+    restart: always
+    environment:
+      PORT: 7070
+    ports:
+      - "7073:7070"
+
+  # ============ REDIS SERVER ============
+  redis:
+    image: redis:latest
+    container_name: redis_distributed_server
+    restart: always
+    ports:
+      - "6379:6379"
+
+  # ============ LOAD BALANCER (NGINX) ============
+  loadbalancer:
+    image: nginx:alpine
+    container_name: nginx_loadbalancer
+    restart: always
+    depends_on:
+      - backend1
+      - backend2
+      - backend3
+    ports:
+      - "7070:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+
+  # ============ NODE DISTRIBUTED SERVICE ============
+  node_distri_service:
+    build: ./dist-r1/api-server
+    restart: always
+    depends_on:
+      - redis
+    environment:
+      REDIS_KEY: "myRateLimiterKey"
+      WINDOW_GAP: "1"
+      WINDOW_CAPACITY: "5"
+
+  # ============ NODE RATE LIMITER SERVICE ============
+  node_rate_limiter_1:
+    build: ./rate-limiter
+    restart: always
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      PORT: 3022
+    ports:
+      - "3022:3022"
+
+# ============ NETWORK CONFIGURATION ============
+networks:
+  default:
+    name: distributed_network
+    driver: bridge
