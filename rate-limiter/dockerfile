@@ -2,5 +2,6 @@ From node:20-alpine
 WORKDIR /rate_limiter_ex
 COPY package*.json .
 COPY . .
+RUN npm install
 EXPOSE 3022
 CMD ["node","src/app.js"]
