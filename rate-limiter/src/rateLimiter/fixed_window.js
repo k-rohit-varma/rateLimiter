@@ -1,11 +1,12 @@
 import client from "./redisClient.js";
-export const fixedWindowCounter = async (req, res, next) => {
+export const fixedwindowDup = async (req, res, next) => {
   const date = new Date();
   try {
 
-    const REDIS_KEY = req.query.redisKey || "REDIS_KEY" ;
+    const REDIS_KEY = req.query.redisKey || "fixed_window_counter_algo_dup" ;
     const LIMIT = parseInt(req.query.limit) || 1 ;
     const CAPACITY = parseInt(req.query.capacity) || 3;
+
     const curhour = date.getHours();
     const curminute = date.getMinutes();
     const curseconds = date.getSeconds();
@@ -28,7 +29,7 @@ export const fixedWindowCounter = async (req, res, next) => {
       await client.lpush(REDIS_KEY, JSON.stringify(data));
       console.log(`Data successfully pushed into redis`, data);
     } else {
-      // first we need to remove all the requests that are less than 1 minute
+      // first we need to remove all the requests that are less than given minute
       // second check after removing n req is the size less tha capacity
       // if less than add this request else say that there are too many requests in one time
 
@@ -40,14 +41,16 @@ export const fixedWindowCounter = async (req, res, next) => {
         const reqHour = reqData.curhour;
         const reqMinute = reqData.curminute;
 
-        if (
-          curdate - reqDate != LIMIT - 1 ||
-          curhour - reqHour != LIMIT - 1 ||
-          curminute - reqMinute != LIMIT - 1
-        ) {
-          const rm = await client.rpop(REDIS_KEY);
-          console.log(`These are remove`, rm);
-          countRemoved++;
+        let diffMin = 0;
+        if( reqData > curdate ){
+            diffMin = ((30 - reqDate) + curdate)*24*60
+        }else {
+            diffMin = ((curdate - reqDate)*24*60) +((curhour - reqHour)*60 )+ (curminute - reqMinute) ;
+        }
+        console.log( "Difference in minute : ",diffMin )
+        if( diffMin >= LIMIT ){
+            countRemoved++;
+            await client.rpop(REDIS_KEY);
         }
       }
       const curLen = length - countRemoved;

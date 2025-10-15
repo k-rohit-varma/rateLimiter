@@ -4,11 +4,11 @@ export const slidingWindowLog = async (req, res, next) => {
   const date = new Date();
   try {
 
-    const { redisKey , gap , cap } = req.query;
+    const { redisKey , windowSizeInMinutes , capacity } = req.query;
 
-    const REDIS_KEY1 = redisKey || "Sliding window log";
-    const windowGap = gap || 1;
-    const windowCapacity = cap || 3;
+    const REDIS_KEY1 = redisKey || "Sliding_window_log_algo";
+    const windowGap = parseInt(windowSizeInMinutes) || 1;
+    const windowCapacity = parseInt(capacity) || 3;
 
     const curhour = date.getHours();
     const curminute = date.getMinutes();

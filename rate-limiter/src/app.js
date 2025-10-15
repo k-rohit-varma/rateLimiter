@@ -1,34 +1,38 @@
-import express from "express"
-import { fixedWindowCounter } from "./rateLimiter/fixed_window_counter.js";
-import { slidingWindowLog } from "./rateLimiter/sliding_window_log.js";
-import { leakyBucket } from "./rateLimiter/leaky_bucket.js";
-import dotenv from "dotenv"
+import express from "express";
+import dotenv from "dotenv";
+import router from "./routers/appRouter.js";
+import swaggerUi from "swagger-ui-express";
+import swaggerJSDoc from "swagger-jsdoc";
 
-dotenv.config()
+dotenv.config();
+const PORT = process.env.PORT || 3022;
+
 const app = express();
+app.use(express.json());
+app.use("/api", router);
 
-app.use( express.json())
+const swaggerOptions = {
+  swaggerDefinition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Rate Limiter Algorithms API',
+      version: '1.0.0',
+      description: 'Test endpoints for rate limiting algorithms',
+    },
+    servers: [
+      {
+        url: `http://localhost:${PORT}`,
+        description: 'Development server',
+      },
+    ],
+  },
+  apis: ['./src/routers/*.js'],
+};
 
-const PORT = process.env.PORT || 3022
+const swaggerDocs = swaggerJSDoc(swaggerOptions);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-app.get("/v0", fixedWindowCounter ,( req , res )=>{
-    return res.status(200).send({
-        "message":"Fixed window counter is able to take this request"
-    })
-})
-
-app.get("/v1" , slidingWindowLog ,( req , res )=>{
-    return res.status(200).send({
-        "message":"Sliding window log algorithm is able to take this request"
-    })
-})
-
-app.get("/v2", leakyBucket ,( req , res )=>{
-    return res.status(200).send({
-        "message":`Leaky bucket algorithm is able to take all the requests`
-    })
-})
-
-app.listen( PORT , ()=>{
-    console.log( `Server is running on port ${PORT}` )
-})
+app.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`📘 Swagger docs at http://localhost:${PORT}/api-docs`);
+});

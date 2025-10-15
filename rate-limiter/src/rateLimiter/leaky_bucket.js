@@ -3,11 +3,11 @@ import client from "./redisClient.js";
 export const leakyBucket = async (req, res, next) => {
   try {
 
-    const {redisKey , bCap , leak , noOfReq} = req.query;
+    const {redisKey , bCap , leakRateInSeconds , noOfReq} = req.query;
 
-    const REDIS_KEY1 = redisKey || "Leaky_Bucket";
+    const REDIS_KEY1 = redisKey || "Leaky_Bucket_algo";
     const bucketCapacity = parseInt(bCap) || 5;
-    const leakingRate = parseInt(leak) || 1 ;
+    const leakingRate = parseInt(leakRateInSeconds) || 1 ;
     const noOfRequests = parseInt(noOfReq) || 3;
     const date = new Date();
 
