@@ -1,14 +1,9 @@
-const Redis = require("ioredis");
-
-const client = new Redis({
-  host: "redis_distributed_server",
-  port: 6379,
-});
-const dotenv = require("dotenv")
+import client from "./client.js";
+import dotenv from "dotenv"
 dotenv.config()
 
 //Sliding window log algorithm
-const slidingWindowLog = async (req, res, next) => {
+export const slidingWindowLog = async (req, res, next) => {
   const date = new Date();
   try {
     const REDIS_KEY1 = process.env.REDIS_KEY || req.query.redisKey  || "redis_key_1";
@@ -98,5 +93,3 @@ const slidingWindowLog = async (req, res, next) => {
     return res.status(500).send(`This is an error from redis server ${err}`);
   }
 };
-
-module.exports = { slidingWindowLog };

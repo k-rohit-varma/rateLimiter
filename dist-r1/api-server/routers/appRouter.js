@@ -1,11 +1,13 @@
-import express from "express";
-import { slidingWindowLog } from "../rateLimiter/sliding_window_log.js";
+import { fixedWindowCounter } from "../rateLimiter/fixed_window_counter.js";
+import { slidingWindowLog } from "../rateLimiter/sliding_window_counter.js";
 import { leakyBucket } from "../rateLimiter/leaky_bucket.js";
-import { fixedwindowDup } from "../rateLimiter/fixed_window.js";
+import express from "express"
+import getRandomColor from "../color.js";
+import os from 'os'
 import { tokenBucket } from "../rateLimiter/token_bucket.js";
 
 const router = express.Router();
-
+var servername = os.hostname()
 /**
  * @swagger
  * /api/fixedWindow:
@@ -43,11 +45,11 @@ const router = express.Router();
  *                   type: string
  *                   example: "✅ Fixed window counter allowed this request"
  */
-router.get("/fixedWindow", fixedwindowDup, (req, res) => {
-  return res.status(200).send({
-    message: "Fixed window counter allowed this request",
-  });
-});
+router.get("/fixedWindow", fixedWindowCounter ,( req , res ) => {
+    let color = getRandomColor();
+    let msg = `<h1 style="color:${color};">Responding Server: ${servername} using fixed window algorithm </h1>`;
+    res.send(msg);
+})
 
 /**
  * @swagger
@@ -87,11 +89,11 @@ router.get("/fixedWindow", fixedwindowDup, (req, res) => {
  *                   example: "✅ Sliding window log accepted this request"
  *      
  */
-router.get("/slidingWindowLog", slidingWindowLog, (req, res) => {
-  return res.status(200).send({
-    message: "Sliding window log accepted this request",
-  });
-});
+router.get("/slidingWindowLog", slidingWindowLog ,( req , res ) => {
+    let color = getRandomColor();
+    let msg = `<h1 style="color:${color};">Responding Server: ${servername} using sliding window log algorithm </h1>`;
+    res.send(msg);
+})
 
 /**
  * @swagger
@@ -136,11 +138,13 @@ router.get("/slidingWindowLog", slidingWindowLog, (req, res) => {
  *                   type: string
  *                   example: "✅ Leaky bucket algorithm accepted all requests"
  */
-router.get("/leakyBucket", leakyBucket, (req, res) => {
-  return res.status(200).send({
-    message: "Leaky bucket algorithm accepted all requests",
-  });
-});
+
+router.get("/leakyBucket", leakyBucket ,( req , res ) => {
+    let color = getRandomColor();
+    let msg = `<h1 style="color:${color};">Responding Server: ${servername} using fixed window algorithm </h1>`;
+    res.send(msg);
+})
+
 
 /**
  * @swagger
@@ -191,9 +195,9 @@ router.get("/leakyBucket", leakyBucket, (req, res) => {
  */
 
 router.get("/tokenBucket" , tokenBucket , ( req , res ) =>{
-  return res.status(200).send({
-      "message":`Token bucket algorithm is able to take all the requests`
-    })
+    let color = getRandomColor();
+    let msg = `<h1 style="color:${color};">Responding Server: ${servername} using sliding window log algorithm </h1>`;
+    res.send(msg);
 } )
 
 export default router;
